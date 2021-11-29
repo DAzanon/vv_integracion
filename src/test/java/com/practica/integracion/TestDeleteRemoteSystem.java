@@ -52,7 +52,7 @@ public class TestDeleteRemoteSystem{
 
     @Test
     public void Test_validUID_invalidRID () throws Exception{
-        String validUID = "";
+        String validUID = "1";
         String invalidRID = "";
         User user = new User("","","","",new ArrayList<Object>());
         when(authDAO.getAuthData(validUID)).thenReturn(null);

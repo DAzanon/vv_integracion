@@ -59,5 +59,15 @@ public class TestDeleteRemoteSystem{
         when(genericDAO.deleteSomeData(user, invalidRID)).thenReturn(null);
         assertThrows(SystemManagerException.class,()->systemManager.deleteRemoteSystem(validUID,invalidRID));
     }
+
+    /*@Test
+    public void Test_validUID_validRID () throws Exception{
+        String validUID = "1";
+        String validRID = "2";
+        User user = new User("","","","",new ArrayList<Object>());
+        when(authDAO.getAuthData(validUID)).thenReturn(null);
+        when(genericDAO.deleteSomeData(user, validRID)).thenReturn(null);
+        assertEquals(el objeto modificado);
+    }*/
 }
 

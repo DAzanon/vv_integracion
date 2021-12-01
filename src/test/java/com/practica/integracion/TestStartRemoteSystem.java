@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -23,6 +24,9 @@ public class TestStartRemoteSystem {
 
     @Test
     public void testStartRemoteSystemWithValidUserAndSystem() throws Exception {
+        mockAuthDao = mock(AuthDAO.class);
+        mockGenericDao = mock(GenericDAO.class);
+        
         User validUser = new User("1","Ana","Lopez","Madrid", new ArrayList<Object>(Arrays.asList(1, 2)));
         Mockito.when(mockAuthDao.getAuthData(validUser.getId())).thenReturn(validUser);
 

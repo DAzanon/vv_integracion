@@ -7,67 +7,95 @@ import com.practica.integracion.manager.SystemManager;
 import com.practica.integracion.manager.SystemManagerException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import javax.naming.OperationNotSupportedException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
 public class TestDeleteRemoteSystem{
 
-    /**
-     * RELLENAR POR EL ALUMNO
-     */
     @InjectMocks
-    private SystemManager systemManager;
+    private static SystemManager systemManager;
 
     @Mock
-    private AuthDAO authDAO;
+    private static AuthDAO authDAO;
 
     @Mock
-    private GenericDAO genericDAO;
+    private static GenericDAO genericDAO;
 
     @Test
-    public void Test_invalidUID_invalidRID () throws Exception{
-        String invalidUID = "";
+    public void Test_invalidUser_invalidRID () throws Exception{
+        User invalidUser = new User("","","","",new ArrayList<Object>());
         String invalidRID = "";
-        User user = new User("","","","",new ArrayList<Object>());
-        when(authDAO.getAuthData(invalidUID)).thenReturn(null);
-        when(genericDAO.deleteSomeData(user, invalidRID)).thenReturn(null);
-        assertThrows(SystemManagerException.class,()->systemManager.deleteRemoteSystem(invalidUID,invalidRID));
+        when(authDAO.getAuthData(invalidUser.getId())).thenReturn(null);
+        when(genericDAO.deleteSomeData(invalidUser, invalidRID)).thenReturn(false);
+
+        assertThrows(SystemManagerException.class, () -> systemManager.deleteRemoteSystem(invalidUser.getId(),invalidRID));
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+        ordered.verify(authDAO).getAuthData(invalidUser.getId());
+        ordered.verify(genericDAO).deleteSomeData(invalidUser, "where id=" + invalidRID);
     }
 
     @Test
-    public void Test_invalidUID_validRID () throws Exception{
-        String invalidUID = "";
-        String validRID = "1";
-        User user = new User("","","","",new ArrayList<Object>());
-        when(authDAO.getAuthData(invalidUID)).thenReturn(null);
-        when(genericDAO.deleteSomeData(user, validRID)).thenReturn(null);
-        assertThrows(SystemManagerException.class,()->systemManager.deleteRemoteSystem(invalidUID,validRID));
+    public void Test_invalidUser_validRID () throws Exception{
+        User invalidUser = new User("","","","",new ArrayList<Object>());
+        String validRID = "";
+        when(authDAO.getAuthData(invalidUser.getId())).thenReturn(null);
+        when(genericDAO.deleteSomeData(invalidUser, validRID)).thenReturn(false);
+
+        assertThrows(SystemManagerException.class, () -> systemManager.deleteRemoteSystem(invalidUser.getId(),validRID));
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+        ordered.verify(authDAO).getAuthData(invalidUser.getId());
+        ordered.verify(genericDAO).deleteSomeData(invalidUser, "where id=" + validRID);
     }
 
     @Test
-    public void Test_validUID_invalidRID () throws Exception{
-        String validUID = "1";
+    public void Test_validUser_invalidRID () throws Exception{
+        User validUser = new User("","","","",new ArrayList<Object>());
         String invalidRID = "";
-        User user = new User("","","","",new ArrayList<Object>());
-        when(authDAO.getAuthData(validUID)).thenReturn(null);
-        when(genericDAO.deleteSomeData(user, invalidRID)).thenReturn(null);
-        assertThrows(SystemManagerException.class,()->systemManager.deleteRemoteSystem(validUID,invalidRID));
+        when(authDAO.getAuthData(validUser.getId())).thenReturn(validUser);
+        when(genericDAO.deleteSomeData(validUser, invalidRID)).thenReturn(false);
+
+        assertThrows(SystemManagerException.class, () -> systemManager.deleteRemoteSystem(validUser.getId(),invalidRID));
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+        ordered.verify(authDAO).getAuthData(validUser.getId());
+        ordered.verify(genericDAO).deleteSomeData(validUser, "where id=" + invalidRID);
     }
 
-    /*@Test
-    public void Test_validUID_validRID () throws Exception{
-        String validUID = "1";
+    @Test
+    public void Test_validUser_validRID_withPermission () throws Exception{
+        User validUser = new User("1","Usuario","Ejemplo","ejemplo",new ArrayList<Object>());
         String validRID = "2";
-        User user = new User("","","","",new ArrayList<Object>());
-        when(authDAO.getAuthData(validUID)).thenReturn(null);
-        when(genericDAO.deleteSomeData(user, validRID)).thenReturn(null);
-        assertEquals(el objeto modificado);
-    }*/
-}
+        when(authDAO.getAuthData(validUser.getId())).thenReturn(validUser);
+        when(genericDAO.deleteSomeData(validUser, validRID)).thenThrow(javax.naming.OperationNotSupportedException.class);
 
+        assertThrows(SystemManagerException.class, () -> systemManager.deleteRemoteSystem(validUser.getId(),validRID));
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+        ordered.verify(authDAO).getAuthData(validUser.getId());
+        ordered.verify(genericDAO).deleteSomeData(validUser, "where id=" + validRID);
+    }
+
+    @Test
+    public void Test_validUser_validRID_noPermission () throws Exception{
+        User validUser = new User("1","Usuario","Ejemplo","ejemplo",new ArrayList<Object>(Arrays.asList(1, 2)));
+        String validRID = "2";
+        when(authDAO.getAuthData(validUser.getId())).thenReturn(validUser);
+        when(genericDAO.deleteSomeData(validUser, validRID)).thenReturn(true);
+
+        //We can't assert anything since it's a void method, we'll just verify the execution order
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+        ordered.verify(authDAO).getAuthData(validUser.getId());
+        ordered.verify(genericDAO).deleteSomeData(validUser, "where id=" + validRID);
+    }
+}

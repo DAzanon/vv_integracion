@@ -86,4 +86,24 @@ public class TestAddRSys {
         ordered.verify(authDAO, times(1)).getAuthData(validUser.getId());
         ordered.verify(genericDAO, times(1)).updateSomeData(validUser, validObject);
     }
+    @Test
+    public void Test_validUser_invalidObject() throws Exception {
+        genericDAO = mock(GenericDAO.class);
+        authDAO = mock(AuthDAO.class);
+
+        User validUser = new User("1","Usuario","Ejemplo","ejemplo",new ArrayList<Object>());
+        when(authDAO.getAuthData(validUser.getId())).thenReturn(validUser);
+
+        Object invalidObject = null;
+        Mockito.when(genericDAO.updateSomeData(validUser, invalidObject)).thenReturn(false);
+
+        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
+
+        SystemManager systemManager = new SystemManager(authDAO, genericDAO);
+        assertThrows(SystemManagerException.class, () -> systemManager.addRemoteSystem(validUser.getId(),invalidObject));
+
+        ordered.verify(authDAO, times(1)).getAuthData(validUser.getId());
+        ordered.verify(genericDAO, times(1)).updateSomeData(validUser,invalidObject);
+    }
+
 }

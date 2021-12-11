@@ -37,14 +37,10 @@ public class TestAddRSys {
 
         Object invalidObject = null;
         Mockito.when(genericDAO.updateSomeData(invalidUser, invalidObject)).thenReturn(false);
-
-        InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
-
+        
         SystemManager systemManager = new SystemManager(authDAO, genericDAO);
         assertThrows(SystemManagerException.class, () -> systemManager.addRemoteSystem(invalidUser.getId(),invalidObject));
 
-        ordered.verify(authDAO, times(1)).getAuthData(invalidUser.getId());
-        ordered.verify(genericDAO, times(1)).updateSomeData(invalidUser,invalidObject);
     }
 
     @Test
@@ -82,9 +78,10 @@ public class TestAddRSys {
 
         SystemManager systemManager = new SystemManager(authDAO, genericDAO);
 
+        systemManager.addRemoteSystem(validUser.getId(), validObject);
         //We can't assert anything since it's a void method, we'll just verify the execution order
-        ordered.verify(authDAO, times(1)).getAuthData(validUser.getId());
-        ordered.verify(genericDAO, times(1)).updateSomeData(validUser, validObject);
+        ordered.verify(authDAO).getAuthData(validUser.getId());
+        ordered.verify(genericDAO).updateSomeData(validUser, validObject);
     }
     @Test
     public void Test_validUser_invalidObject() throws Exception {

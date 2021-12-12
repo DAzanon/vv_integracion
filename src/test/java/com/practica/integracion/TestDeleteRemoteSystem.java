@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TestDeleteRSys {
+public class TestDeleteRemoteSystem {
 
     @Mock private static AuthDAO authDAO;
     @Mock private static GenericDAO genericDAO;
@@ -81,6 +81,7 @@ public class TestDeleteRSys {
         InOrder ordered = Mockito.inOrder(authDAO, genericDAO);
 
         SystemManager systemManager = new SystemManager(authDAO, genericDAO);
+        systemManager.deleteRemoteSystem(validUser.getId(), validRID);
 
         //We can't assert anything since it's a void method, we'll just verify the execution order
         ordered.verify(authDAO, times(1)).getAuthData(validUser.getId());
